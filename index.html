@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APT安沛动力 - Web Neon Tuner</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #030712; color: #f8fafc; padding: 15px; text-align: center; }
+        .app-container { background: #0f172a; padding: 20px; border-radius: 20px; margin: 10px auto; max-width: 380px; box-shadow: 0 0 25px rgba(0, 240, 255, 0.25); border: 2px solid #00f0ff; }
+        .logo-title { color: #00f0ff; font-size: 28px; font-weight: 900; text-shadow: 0 0 10px #00f0ff; letter-spacing: 2px; }
+        .logo-sub { color: #94a3b8; font-size: 11px; margin-bottom: 20px; }
+        button { background: transparent; color: #00f0ff; border: 2px solid #00f0ff; padding: 14px; font-size: 15px; font-weight: bold; border-radius: 12px; cursor: pointer; width: 100%; margin-top: 10px; text-shadow: 0 0 5px #00f0ff; transition: 0.2s; }
+        button:active { background: rgba(0, 240, 255, 0.2); }
+        .btn-save { color: #39ff14; border: 2px solid #39ff14; text-shadow: 0 0 5px #39ff14; margin-top: 15px; font-size: 16px; }
+        .profile-panel { background: #020617; padding: 15px; border-radius: 14px; margin-top: 15px; border: 1px solid #ff007f; text-align: left; }
+        .profile-select { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #ff007f; color: #ff007f; border-radius: 8px; font-size: 15px; font-weight: bold; margin-bottom: 10px; outline: none; text-shadow: 0 0 3px #ff007f; }
+        .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .btn-profile { color: #ff007f; border-color: #ff007f; text-shadow: 0 0 4px #ff007f; padding: 10px; font-size: 13px; }
+        .btn-line { color: #06c755; border-color: #06c755; text-shadow: 0 0 4px #06c755; }
+        .gps-status { font-size: 11px; color: #eab308; background: #1e1b4b; padding: 8px; border-radius: 6px; margin-bottom: 10px; border: 1px dashed #eab308; font-family: monospace; }
+        .control-panel { background: #020617; padding: 18px; border-radius: 14px; margin-top: 15px; text-align: left; border: 1px solid #1e293b; }
+        .panel-title { margin-top: 0; color: #39ff14; font-size: 15px; border-bottom: 1px solid #1e293b; padding-bottom: 8px; text-shadow: 0 0 5px #39ff14; }
+        .flex-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        label { display: block; color: #94a3b8; font-size: 12px; margin-bottom: 4px; margin-top: 8px; }
+        input { width: 90%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: #fff; border-radius: 8px; font-size: 15px; }
+        #monitor-screen { color: #ff007f; font-family: monospace; font-size: 13px; background: #020617; padding: 10px; border-radius: 10px; border: 1px solid #ff007f; text-shadow: 0 0 4px #ff007f; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="logo-title">APT PRO-GPS</div>
+        <div class="logo-sub">Web Tuning Cyberpunk Edition</div>
+        
+        <div id="monitor-screen">STATUS: OFF LINE</div>
+        <button onclick="connectAptEV()">⚡ CONNECT TO EV</button>
+
+        <div class="profile-panel">
+            <div id="gps-display" class="gps-status">GPS: กำลังล็อกพิกัดความแม่นยำสูง...</div>
+            <select id="profileChooser" class="profile-select" onchange="loadSelectedProfile()">
+                <option value="สนามแข่ง (Race Day)">🏁 โพรไฟล์: สนามแข่ง (Race Day)</option>
+                <option value="ใช้งานทั่วไป (Street)">🛵 โพรไฟล์: ใช้งานทั่วไป (Street)</option>
+                <option value="เซฟมอเตอร์ (Cool Down)">⚠️ โพรไฟล์: เซฟมอเตอร์ (Cool Down)</option>
+            </select>
+            <div class="profile-grid">
+                <button class="btn-profile" onclick="saveCurrentToProfile()">💾 จำค่าลงโพรไฟล์</button>
+                <button class="btn-profile btn-line" onclick="shareToLine()">🟢 ส่งออกไฟล์ไป LINE</button>
+            </div>
+        </div>
+        
+        <div class="control-panel">
+            <h3 class="panel-title">⚙️ CONTROLLER PARAMETERS</h3>
+            <div class="flex-inputs">
+                <div><label>Phase Current (A):</label><input type="number" id="phaseAmp" value="260"></div>
+                <div><label>Battery Current (A):</label><input type="number" id="batteryAmp" value="96"></div>
+            </div>
+            <label>กระแสเพิ่มรอบความเร็วปลาย (Flux Weakening - A):</label>
+            <input type="number" id="fluxAmp" value="40" style="width: 96%;">
+            <div class="flex-inputs">
+                <div><label>Throttle Low (%):</label><input type="number" id="tLow" value="25"></div>
+                <div><label>Throttle High (%):</label><input type="number" id="tHigh" value="96"></div>
+            </div>
+        </div>
+        <button onclick="writeConfigToApt()" class="btn-save">⚡ WRITE PARAMETERS TO MOTOR</button>
+    </div>
+
+    <script>
+        let writeChar = null;
+        let userLatitude = "0.0000000"; let userLongitude = "0.0000000";
+        
+        const defaultProfiles = {
+            "Race Track (Race Day)": { phase: 260, battery: 115, flux: 45, low: 25, high: 96 },
+            "General use (Street)": { phase: 180, battery: 80, flux: 20, low: 20, high: 85 },
+            "Safe Motor (Cool Down)": { phase: 260, battery: 100, flux: 40, low: 25, high: 95 }
+        };
+
+        function startGpsTracking() {
+    if (navigator.geolocation) {
+        const options = { 
+            enableHighAccuracy: false, // เปิดใช้ GPS ฮาร์ดแวร์
+            timeout: 10000,           // รอนนสัญญาณสูงสุด 10 วินาที
+            maximumAge: 0             // ไม่ใช้ข้อมูลตำแหน่งเก่าที่แคชไว้
+        };
+
+        navigator.geolocation.watchPosition(
+            (position) => {
+                userLatitude = position.coords.latitude.toFixed(7);
+                userLongitude = position.coords.longitude.toFixed(7);
+                
+                const display = document.getElementById('gps-display');
+                display.innerText = `📡 LIVE GPS (7D): ${userLatitude}, ${userLongitude}`;
+                display.style.color = "#39ff14";
+                display.style.borderColor = "#39ff14";
+            }, 
+            (error) => {
+                console.error("GPS Error Code: " + error.code, error.message);
+                alert("ไม่สามารถเข้าถึง GPS ได้ กรุณาเปิดระบบระบุตำแหน่งบนมือถือ");
+            }, 
+            options
+        );
+    } else {
+        alert("เบราว์เซอร์นี้ไม่รองรับระบบ GPS");
+    }
+}
+
+
+        function loadSelectedProfile() {
+            let name = document.getElementById('profileChooser').value;
+            let saved = JSON.parse(localStorage.getItem('APT_Profiles')) || defaultProfiles;
+            let config = saved[name] || defaultProfiles[name];
+            document.getElementById('phaseAmp').value = config.phase;
+            document.getElementById('batteryAmp').value = config.battery;
+            document.getElementById('fluxAmp').value = config.flux;
+            document.getElementById('tLow').value = config.low;
+            document.getElementById('tHigh').value = config.high;
+        }
+
+        function saveCurrentToProfile() {
+            let name = document.getElementById('profileChooser').value;
+            let saved = JSON.parse(localStorage.getItem('APT_Profiles')) || defaultProfiles;
+            saved[name] = {
+                phase: parseInt(document.getElementById('phaseAmp').value),
+                battery: parseInt(document.getElementById('batteryAmp').value),
+                flux: parseInt(document.getElementById('fluxAmp').value),
+                low: parseInt(document.getElementById('tLow').value),
+                high: parseInt(document.getElementById('tHigh').value)
+            };
+            localStorage.setItem('APT_Profiles', JSON.stringify(saved));
+            alert('บันทึกโพรไฟล์สำเร็จ!');
+        }
+
+        function shareToLine() {
+            let name = document.getElementById('profileChooser').value;
+            let textContent = `PROFILE: ${name}\r\nGPS: ${userLatitude}, ${userLongitude}\r\nPHASE: ${document.getElementById('phaseAmp').value}A\r\nBATTERY: ${document.getElementById('batteryAmp').value}A\r\nFLUX: ${document.getElementById('fluxAmp').value}A`;
+            let blob = new Blob([textContent], { type: "text/plain;charset=utf-8" });
+            if (navigator.share) {
+                navigator.share({ files: [new File([blob], `APT_${name}.txt`, { type: "text/plain" })] });
+            }
+        }
+
+        async function connectAptEV() {
+            const monitor = document.getElementById('monitor-screen');
+            try {
+                monitor.innerText = "SCANNING FOR CONTROLLER...";
+                const device = await navigator.bluetooth.requestDevice({
+                    filters: [{ name: 'APT安沛动力' }],
+                    optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb']
+                });
+                const server = await device.gatt.connect();
+                const service = await server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
+                const characteristics = await service.getCharacteristics();
+                
+                // แก้บั๊กหน้าเว็บ: คัดเลือกพอร์ตแรกสุดที่รองรับขาส่งสัญญาณของชิปจีนโดยตรง
+                if (characteristics.length > 0) writeChar = characteristics[0];
+
+                monitor.innerText = "CONNECTED // TUNER READY";
+                monitor.style.color = "#39ff14";
+                monitor.style.borderColor = "#39ff14";
+            } catch (error) {
+                monitor.innerText = "ERROR: " + error.message.toUpperCase();
+                monitor.style.color = "#ff007f";
+                monitor.style.borderColor = "#ff007f";
+            }
+        }
+
+        async function writeConfigToApt() {
+            const monitor = document.getElementById('monitor-screen');
+            if (!writeChar) return alert("กรุณากดปุ่ม ⚡ CONNECT TO EV ด้านบนเพื่อเชื่อมบลูทูธก่อนครับ!");
+            
+            let phase = parseInt(document.getElementById('phaseAmp').value);
+            let battery = parseInt(document.getElementById('batteryAmp').value);
+            let flux = parseInt(document.getElementById('fluxAmp').value);
+            let low = parseInt(document.getElementById('tLow').value);
+            let high = parseInt(document.getElementById('tHigh').value);
+
+            let hexCommand = new Uint8Array([
+                0x3A, 0x01, 0x06, 0x00, 0x12, 
+                (phase >> 8) & 0xFF, phase & 0xFF,   
+                (battery >> 8) & 0xFF, battery & 0xFF,
+                (flux >> 8) & 0xFF, flux & 0xFF,
+                low & 0xFF, high & 0xFF,
+                0x0D, 0x0A 
+            ]);
+
+            try {
+                // แก้บั๊กไม้ตายคู่ขนาน: ลองส่งแบบปกติ (WithValue) ถ้าบราวเซอร์ฟ้อง error ให้สลับไปส่งแบบไร้ผลตอบกลับทันที
+                await writeChar.writeValue(hexCommand);
+                monitor.innerText = "SUCCESS: CONFIG OVERWRITTEN!";
+                monitor.style.color = "#39ff14";
+            } catch (error) {
+                try {
+                    // ช่องทางสำรองป้องกันคำสั่ง writeValue is not a function บนเว็บเบราว์เซอร์มือถือ
+                    await writeChar.writeValueWithoutResponse(hexCommand);
+                    monitor.innerText = "SUCCESS: CONFIG OVERWRITTEN! (LOW-LATENCY)";
+                    monitor.style.color = "#39ff14";
+                } catch (err) {
+                    alert("WRITE FAILED: " + err.message);
+                }
+            }
+        }
+
+        window.onload = function() { loadSelectedProfile(); startGpsTracking(); };
+    </script>
+</body>
+</html>
