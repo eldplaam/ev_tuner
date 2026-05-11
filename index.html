@@ -50,11 +50,11 @@
         <div class="control-panel">
             <h3 class="panel-title">⚙️ CONTROLLER PARAMETERS</h3>
             <div class="flex-inputs">
-                <div><label>Phase Current (A):</label><input type="number" id="phaseAmp" value="260"></div>
-                <div><label>Battery Current (A):</label><input type="number" id="batteryAmp" value="96"></div>
+                <div><label>Phase Current (A):</label><input type="number" id="phaseAmp" value="280"></div>
+                <div><label>Battery Current (A):</label><input type="number" id="batteryAmp" value="117"></div>
             </div>
             <label>กระแสเพิ่มรอบความเร็วปลาย (Flux Weakening - A):</label>
-            <input type="number" id="fluxAmp" value="40" style="width: 96%;">
+            <input type="number" id="fluxAmp" value="36" style="width: 117%;">
             <div class="flex-inputs">
                 <div><label>Throttle Low (%):</label><input type="number" id="tLow" value="25"></div>
                 <div><label>Throttle High (%):</label><input type="number" id="tHigh" value="96"></div>
@@ -68,9 +68,9 @@
         let userLatitude = "0.0000000"; let userLongitude = "0.0000000";
         
         const defaultProfiles = {
-            "Race Track (Race Day)": { phase: 260, battery: 115, flux: 45, low: 25, high: 96 },
-            "General use (Street)": { phase: 180, battery: 80, flux: 20, low: 20, high: 85 },
-            "Safe Motor (Cool Down)": { phase: 260, battery: 100, flux: 40, low: 25, high: 95 }
+            "Race Track (Race Day)": { phase: 280, battery: 117, flux: 36, low: 25, high: 96 },
+            "General use (Street)": { phase: 220, battery: 85, flux: 30, low: 20, high: 85 },
+            "Safe Motor (Cool Down)": { phase: 270, battery: 110, flux: 35, low: 25, high: 95 }
         };
 
         function startGpsTracking() {
