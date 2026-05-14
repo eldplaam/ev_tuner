@@ -2,9 +2,29 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>APT & UNIVERSAL EV CONTROLLER</title>
+
+<!-- CHART -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- LEAFLET -->
+<link
+rel="stylesheet"
+href="https://unpkg.com/leaflet/dist/leaflet.css"
+/>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
 <style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial;
+}
+
 body {
     font-family: 'Segoe UI', sans-serif;
     background: #030712;
@@ -20,14 +40,14 @@ body {
     margin: 10px auto;
     max-width: 380px;
     box-shadow: 0 0 25px rgba(0,240,255,.25);
-    border: 2px solid #00f0ff;
+    border: 2px solid #00ffff;
 }
 
 .logo-title {
-    color:#00f0ff;
+    color:#00ffff;
     font-size:28px;
     font-weight:900;
-    text-shadow:0 0 10px #00f0ff;
+    text-shadow:0 0 10px #00ffff;
 }
 
 .logo-sub {
@@ -39,7 +59,7 @@ body {
 button {
     background:transparent;
     color:#00f0ff;
-    border:2px solid #00f0ff;
+    border:2px solid #00ffff;
     padding:14px;
     font-size:15px;
     font-weight:bold;
@@ -47,6 +67,12 @@ button {
     cursor:pointer;
     width:100%;
     margin-top:10px;
+    transition:0.3s;
+}
+
+button:hover{
+transform:scale(1.02);
+box-shadow:0 0 15px rgba(0,255,255,.4);
 }
 
 .btn-save {
@@ -109,11 +135,27 @@ select {
     padding:10px;
     border-radius:10px;
     border:1px solid #ff007f;
+    margin-top:15px;
 }
 
 .gps-status {
     font-size:11px;
     color:#eab308;
+    line-height:1.8;
+}
+
+.mapCard{
+height:420px;
+border-radius:25px;
+overflow:hidden;
+margin-top:30px;
+border:1px solid rgba(0,255,255,.3);
+box-shadow:0 0 25px rgba(0,255,255,.15);
+}
+
+#map{
+width:100%;
+height:100%;
 }
 
 .brand-panel {
@@ -123,6 +165,7 @@ select {
     margin-bottom:15px;
     border:1px solid #6366f1;
 }
+
 </style>
 </head>
 <body>
@@ -132,7 +175,7 @@ select {
 <div class="logo-title">APT PRO-GPS</div>
 <div class="logo-sub">Stable Plus Multi-Brand Edition</div>
 
-<!-- ส่วนเลือกแบรนด์ Controller -->
+<!-- ส่วนเลือกแบรนด์ -->
 <div class="brand-panel">
 
 <label style="color:#a5b4fc; margin-top:0;">
@@ -141,16 +184,16 @@ select {
 
 <select id="controllerBrand" onchange="switchBrandSettings()">
     <option value="APT">🟢 APT安沛动力 (Original BLE)</option>
-    <option value="APT_LOT">🟢 APT Smart Match (ล็อตปี 22 - 26 / APT-YYWW)</option>
+    <option value="APT_LOT">🟢 APT Smart Match</option>
     <option value="APT_96600">🟢 APT (Future Module)</option>
-    <option value="VOTOL">🔵 VOTOL (Future Module)</option>
-    <option value="EM">🔵 EM (Future Module)</option>
-    <option value="FD">🟡 FarDriver (Future Module)</option>
-    <option value="FARDRIVER">🟡 FARDRIVER (Future Module)</option>
-    <option value="ND">Nanjing (Future Module)</option>
-    <option value="Kelly">Kelly Controls (Future Module)</option>
-    <option value="KLS">Kelly (Future Module)</option>
-    <option value="Lingbo">Lingbo (Future Module)</option>
+    <option value="VOTOL">🔵 VOTOL</option>
+    <option value="EM">🔵 EM</option>
+    <option value="FD">🟡 FarDriver</option>
+    <option value="FARDRIVER">🟡 FARDRIVER</option>
+    <option value="ND">Nanjing</option>
+    <option value="Kelly">Kelly Controls</option>
+    <option value="KLS">Kelly</option>
+    <option value="Lingbo">Lingbo</option>
 </select>
 
 </div>
@@ -178,6 +221,7 @@ GPS READY...
 </select>
 
 <div class="profile-grid">
+
     <button class="btn-profile" onclick="saveCurrentToProfile()">
     💾 SAVE PROFILE
     </button>
@@ -189,6 +233,7 @@ GPS READY...
     <button class="btn-profile" onclick="exportProfiles()">
     📦 EXPORT BACKUP
     </button>
+
 </div>
 
 </div>
@@ -232,9 +277,15 @@ GPS READY...
 ⚡ WRITE PARAMETERS TO MOTOR
 </button>
 
+<!-- MAP -->
+<div class="mapCard">
+    <div id="map"></div>
+</div>
+
 </div>
 
 <script>
+
 let writeChar = null;
 let activeDevice = null;
 
@@ -272,26 +323,6 @@ const brandConfigs = {
 
     FARDRIVER: {
         name: 'FARDRIVER',
-        serviceUuid: '0000ffe1-0000-1000-8000-00805f9b34fb'
-    },
-
-    ND: {
-        name: 'Nanjing',
-        serviceUuid: '0000ffe1-0000-1000-8000-00805f9b34fb'
-    },
-
-    Kelly: {
-        name: 'Kelly Controls',
-        serviceUuid: '49535343-fe7d-4ae5-8fa9-9fafd205e455'
-    },
-
-    KLS: {
-        name: 'Kelly',
-        serviceUuid: '49535343-fe7d-4ae5-8fa9-9fafd205e455'
-    },
-
-    Lingbo: {
-        name: 'Lingbo',
         serviceUuid: '0000ffe1-0000-1000-8000-00805f9b34fb'
     }
 };
@@ -348,22 +379,6 @@ async function connectEV(){
 
         activeDevice = device;
 
-        let connectedName = device.name || 'Unknown Device';
-
-        let batchInfo = '';
-
-        if (connectedName.startsWith('APT-')) {
-
-            let numPart = connectedName.replace('APT-', '');
-
-            if (numPart.length >= 4) {
-                let year = '20' + numPart.substring(0, 2);
-                let week = numPart.substring(2, 4);
-
-                batchInfo = ` (ปีผลิต: ${year} / Week: ${week})`;
-            }
-        }
-
         const server = await device.gatt.connect();
         const service = await server.getPrimaryService(config.serviceUuid);
         const characteristics = await service.getCharacteristics();
@@ -372,7 +387,7 @@ async function connectEV(){
             writeChar = characteristics[0];
         }
 
-        monitor.innerText = `CONNECTED TO: ${connectedName}${batchInfo}`;
+        monitor.innerText = `CONNECTED TO: ${device.name}`;
         monitor.style.color = '#39ff14';
 
     } catch(error) {
@@ -387,7 +402,6 @@ async function connectEV(){
 async function writeConfigToMotor(){
 
     const monitor = document.getElementById('monitor-screen');
-    const selectedBrand = document.getElementById('controllerBrand').value;
 
     if (!writeChar) {
         alert('กรุณา CONNECT ก่อน');
@@ -400,54 +414,15 @@ async function writeConfigToMotor(){
     let low = parseInt(document.getElementById('tLow').value);
     let high = parseInt(document.getElementById('tHigh').value);
 
-    let hexCommand;
-
-    if (selectedBrand === 'APT') {
-
-        hexCommand = new Uint8Array([
-            0x3A, 0x01, 0x06, 0x00, 0x12,
-            (phase >> 8) & 0xFF, phase & 0xFF,
-            (battery >> 8) & 0xFF, battery & 0xFF,
-            (flux >> 8) & 0xFF, flux & 0xFF,
-            low & 0xFF,
-            high & 0xFF,
-            0x0D, 0x0A
-        ]);
-
-    } else if (selectedBrand === 'APT_96600') {
-
-        let tempArray = [
-            0x3A, 0x01, 0x06,
-            (phase >> 8) & 0xFF, phase & 0xFF,
-            (battery >> 8) & 0xFF, battery & 0xFF,
-            (flux >> 8) & 0xFF, flux & 0xFF
-        ];
-
-        let checksum = 0;
-
-        for (let i = 0; i < tempArray.length; i++) {
-            checksum ^= tempArray[i];
-        }
-
-        tempArray.push(checksum);
-
-        hexCommand = new Uint8Array(tempArray);
-
-    } else if (selectedBrand === 'VOTOL') {
-
-        alert('ระบบคำสั่งของ VOTOL กำลังอยู่ในช่วงพัฒนา');
-        return;
-
-    } else if (selectedBrand === 'FARDRIVER' || selectedBrand === 'FD') {
-
-        alert('ระบบคำสั่งของ FARDRIVER กำลังอยู่ในช่วงพัฒนา');
-        return;
-
-    } else {
-
-        alert('ยังไม่รองรับ Controller รุ่นนี้');
-        return;
-    }
+    let hexCommand = new Uint8Array([
+        0x3A, 0x01, 0x06, 0x00, 0x12,
+        (phase >> 8) & 0xFF, phase & 0xFF,
+        (battery >> 8) & 0xFF, battery & 0xFF,
+        (flux >> 8) & 0xFF, flux & 0xFF,
+        low & 0xFF,
+        high & 0xFF,
+        0x0D, 0x0A
+    ]);
 
     try {
 
@@ -461,20 +436,10 @@ async function writeConfigToMotor(){
 
     } catch(error) {
 
-        try {
+        monitor.innerText = 'WRITE FAILED';
+        monitor.style.color = '#ff0055';
 
-            await writeChar.writeValueWithoutResponse(hexCommand);
-
-            monitor.innerText = 'SUCCESS: LOW LATENCY MODE';
-            monitor.style.color = '#39ff14';
-
-        } catch(err) {
-
-            monitor.innerText = 'WRITE FAILED';
-            monitor.style.color = '#ff0055';
-
-            console.error(err);
-        }
+        console.error(error);
     }
 }
 
@@ -519,7 +484,7 @@ function saveCurrentToProfile(){
 
     let saved = JSON.parse(localStorage.getItem('APT_Profiles')) || defaultProfiles;
 
-    saved[name] = {
+       saved[name] = {
         phase: parseInt(document.getElementById('phaseAmp').value),
         battery: parseInt(document.getElementById('batteryAmp').value),
         flux: parseInt(document.getElementById('fluxAmp').value),
@@ -527,21 +492,32 @@ function saveCurrentToProfile(){
         high: parseInt(document.getElementById('tHigh').value)
     };
 
-    localStorage.setItem('APT_Profiles', JSON.stringify(saved));
+    localStorage.setItem(
+        'APT_Profiles',
+        JSON.stringify(saved)
+    );
 
     alert('SAVE SUCCESS');
 }
+
+/* ======================================
+   EXPORT PROFILE
+====================================== */
 
 function exportProfiles(){
 
     const profiles = localStorage.getItem('APT_Profiles');
 
     if (!profiles) {
+
         alert('ไม่มีข้อมูล');
         return;
     }
 
-    const blob = new Blob([profiles], {type:'application/json'});
+    const blob = new Blob(
+        [profiles],
+        {type:'application/json'}
+    );
 
     const link = document.createElement('a');
 
@@ -549,9 +525,15 @@ function exportProfiles(){
     link.download = 'APT_Backup_Profiles.json';
 
     document.body.appendChild(link);
+
     link.click();
+
     document.body.removeChild(link);
 }
+
+/* ======================================
+   SHARE TO LINE
+====================================== */
 
 function shareToLine(){
 
@@ -561,17 +543,117 @@ PHASE: ${document.getElementById('phaseAmp').value}A
 BATTERY: ${document.getElementById('batteryAmp').value}A
 FLUX: ${document.getElementById('fluxAmp').value}A`;
 
-    let lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(textMessage)}`;
+    let lineUrl =
+`https://line.me/R/msg/text/?${encodeURIComponent(textMessage)}`;
 
     window.open(lineUrl, '_blank');
 }
 
+/* ======================================
+   REAL GPS MAP SYSTEM
+====================================== */
+
+let map;
+let marker;
+let routeLine;
+let gpsInitialized = false;
+
+function initMap(lat = 7.8804, lng = 98.3923){
+
+    map = L.map('map').setView([lat, lng], 17);
+
+    L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        {
+            maxZoom: 20,
+            attribution: 'APT PRO GPS'
+        }
+    ).addTo(map);
+
+    marker = L.marker([lat, lng])
+        .addTo(map)
+        .bindPopup('📍 CURRENT LOCATION')
+        .openPopup();
+
+    routeLine = L.polyline([], {
+        weight: 5,
+        opacity: 0.8
+    }).addTo(map);
+
+    gpsInitialized = true;
+}
+
+function startRealGPS(){
+
+    const gpsDisplay =
+    document.getElementById('gps-display');
+
+    if(!navigator.geolocation){
+
+        gpsDisplay.innerHTML =
+        '❌ GPS NOT SUPPORTED';
+
+        return;
+    }
+
+    navigator.geolocation.watchPosition(
+
+        (position)=>{
+
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+
+            const speed =
+            position.coords.speed
+            ? (position.coords.speed * 3.6).toFixed(1)
+            : 0;
+
+            if(!gpsInitialized){
+
+                initMap(lat, lng);
+            }
+
+            marker.setLatLng([lat, lng]);
+
+            map.flyTo([lat, lng], 18, {
+                animate: true,
+                duration: 1
+            });
+
+            routeLine.addLatLng([lat, lng]);
+
+            gpsDisplay.innerHTML = `
+            📍 LAT: ${lat.toFixed(6)}<br>
+            📍 LNG: ${lng.toFixed(6)}<br>
+            🚀 SPEED: ${speed} km/h
+            `;
+
+        },
+
+        (error)=>{
+
+            console.error(error);
+
+            gpsDisplay.innerHTML =
+            '❌ GPS ACCESS DENIED';
+        },
+
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        }
+    );
+}
+
 window.onload = function(){
+
     loadSelectedProfile();
+    startRealGPS();
+
+    console.log('APT PRO GPS SYSTEM READY');
 };
 
 </script>
 </body>
 </html>
-## จุดที่ต้องแก้ไข
-* แก้ อุปกรณ์ IoT "UIUD"ที่กล่อง Controller *ของแต่ละค่ายส่งออกมา*
