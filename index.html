@@ -288,6 +288,9 @@ GPS READY...
 
 let writeChar = null;
 let activeDevice = null;
+let currentLat = 0;
+let currentLng = 0;
+let currentSpeed = 0;
 
 const brandConfigs = {
 
@@ -542,16 +545,19 @@ function shareToLine(){
 🏎️🪫PHASE: ${document.getElementById('phaseAmp').value}A
 🔋⚡BATTERY: ${document.getElementById('batteryAmp').value}A
 🛵FLUX: ${document.getElementById('fluxAmp').value}A
-📍LAT: ${document.getElementById('gps-display').value}A
-📍 LNG: ${document.getElementById('gps-display').value}A
-🚀 SPEED: ${document.getElementById.('speed')value}A`;
+📍 LAT: ${currentLat.toFixed(7)}
+📍 LNG: ${currentLng.toFixed(7)}
+🚀 SPEED: ${currentSpeed} km/h
+🗺️ MAP:
+https://maps.google.com/?q=${currentLat},${currentLng}`;
 
 //📍LAT: ${document.getElementById('gps-display').value}A
 //📍 LNG: ${document.getElementById('gps-display').value}A
 //🚀 SPEED: ${document.getElementById.value}A`;    
 //📍🔌LAT: ${lat.toFixed(6)}<br>
 //📍 LNG: ${lng.toFixed(6)}<br>
-//🚀 SPEED: ${speed} km/h    
+//🚀 SPEED: ${speed} km/h 
+   
 
     let lineUrl =
 `https://line.me/R/msg/text/?${encodeURIComponent(textMessage)}`;
@@ -633,8 +639,8 @@ function startRealGPS(){
             routeLine.addLatLng([lat, lng]);
 
             gpsDisplay.innerHTML = `
-            📍 LAT: ${lat.toFixed(6)}<br>
-            📍 LNG: ${lng.toFixed(6)}<br>
+            📍 LAT: ${lat.toFixed(7)}<br>
+            📍 LNG: ${lng.toFixed(7)}<br>
             🚀 SPEED: ${speed} km/h
             `;
 
