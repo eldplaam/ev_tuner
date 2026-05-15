@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>APT & UNIVERSAL EV CONTROLLER</title>
+
+<!-- CHART -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- LEAFLET -->
+<link
+rel="stylesheet"
+href="https://unpkg.com/leaflet/dist/leaflet.css"
+/>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+	
+   <style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial;
+}
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #030712;
+    color: #f8fafc;
+    padding: 15px;
+    text-align: center;
+}
+
+.app-container {
+    background: #0f172a;
+    padding: 20px;
+    border-radius: 20px;
+    margin: 10px auto;
+    max-width: 380px;
+    box-shadow: 0 0 25px rgba(0,240,255,.25);
+    border: 2px solid #00ffff;
+}
+
+.logo-title {
+    color:#00ffff;
+    font-size:28px;
+    font-weight:900;
+    text-shadow:0 0 10px #00ffff;
+}
+
+.logo-sub {
+    color:#94a3b8;
+    font-size:11px;
+    margin-bottom:20px;
+}
+
+button {
+    background:transparent;
+    color:#00f0ff;
+    border:2px solid #00ffff;
+    padding:14px;
+    font-size:15px;
+    font-weight:bold;
+    border-radius:12px;
+    cursor:pointer;
+    width:100%;
+    margin-top:10px;
+    transition:0.3s;
+}
+
+button:hover{
+transform:scale(1.02);
+box-shadow:0 0 15px rgba(0,255,255,.4);
+}
+
+.btn-save {
+    color:#39ff14;
+    border-color:#39ff14;
+}
+
+.btn-profile {
+    color:#ff007f;
+    border-color:#ff007f;
+}
+
+.btn-line {
+    color:#06c755;
+    border-color:#06c755;
+}
+
+.profile-grid {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+}
+
+.control-panel,
+.profile-panel {
+    background:#020617;
+    padding:15px;
+    border-radius:14px;
+    margin-top:15px;
+}
+
+.flex-inputs {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+label {
+    display:block;
+    margin-top:8px;
+    margin-bottom:4px;
+    color:#94a3b8;
+    font-size:12px;
+}
+
+input,
+select {
+    width:90%;
+    padding:10px;
+    background:#0f172a;
+    border:1px solid #334155;
+    color:white;
+    border-radius:8px;
+}
+
+#monitor-screen {
+    color:#ff007f;
+    font-family:monospace;
+    background:#020617;
+    padding:10px;
+    border-radius:10px;
+    border:1px solid #ff007f;
+    margin-top:15px;
+}
+
+.gps-status {
+    font-size:11px;
+    color:#eab308;
+    line-height:1.8;
+}
+
+.mapCard{
+height:420px;
+border-radius:25px;
+overflow:hidden;
+margin-top:30px;
+border:1px solid rgba(0,255,255,.3);
+box-shadow:0 0 25px rgba(0,255,255,.15);
+}
+
+#map{
+width:100%;
+height:100%;
+}
+
+.brand-panel {
+    background:#1e1b4b;
+    padding:12px;
+    border-radius:14px;
+    margin-bottom:15px;
+    border:1px solid #6366f1;
+}
+</style>
+
+</head>
+<body>
+<div class="app-container">
+<div class="logo-title">APT PRO-GPS</div>
+<div class="logo-sub">Stable Plus Multi-Brand Edition</div>
+    
+    <div class="form-group">
+        <label>🔌🔋 Volt (V.)</label>
+        <input type="number" id="Voltage" value="60">
+    </div>
+
+    <div class="form-group">
+        <label>🛵🛞 Direct Current (Ah.x2)</label>
+        <input type="number" id="DCAmp" value="70">
+    </div>
+
+    <div class="form-group">
+        <label>🎛️ MOTOR (Watt.)</label>
+        <input type="number" id="MOTORAmp" value="3000">
+    </div>
+
+    <div class="form-group">
+        <label>📟 BMS (A.x2)</label>
+        <input type="number" id="BMSAmp" value="120">
+    </div>
+
+    <div class="form-group">
+        <label>🛞 Hub Motor ("INCHES)</label>
+        <input type="number" id="HubMotor" value="12">
+    </div>
+
+    <div class="form-group" style="background: #39ff14cd; padding: 10px; border-radius: 4px;">
+        <label>⚙️Ⓜ️ Motor KV (รอบต่อ 1 โวลต์ - ตัวเปล่า)</label>
+        <input type="number" id="MotorKV" value="14">
+        <small style="color: #39ff14c;">*หากไม่ทราบ ค่าเฉลี่ยมอเตอร์ 12 นิ้วสายความเร็วจะอยู่ที่ประมาณ 14 KV</small>
+    </div>
+
+    <button onclick="calculateRealEV()">คำนวณผลลัพธ์</button>
+
+</div>
+    <div class="result-box">
+        <h3>ผลการคำนวณ (Real-world Estimate):</h3>
+        <!-- แก้ไขโครงสร้าง ID ตรงนี้ให้ถูกต้องเพื่อไม่ให้สคริปต์ค้าง -->
+        <div class="result-item">🔋 <b>พลังงานรวมแบตเตอรี่:</b> <span id="resEnergy" style="color: red; font-weight: bold;">0</span> KWh</div>
+        <div class="result-item">🌀 <b>ความเร็วรอบตัวเปล่า(No-Load):</b> <span id="resNoLoadRPM" style="color: red; font-weight: bold;">0</span> RPM</div>
+        <div class="result-item">🌀 <b>ความเร็วรอบใช้งาน(On-Road):</b> <span id="resRealRPM" class="highlight" style="color: red; font-weight: bold;">0</span> RPM</div>
+        <div class="result-item">🚀 <b>ความเร็วสูงสุดบนถนน:</b> <span id="resRealSpeed" class="highlight" style="color: red; font-weight: bold;">0</span> km/h</div>
+        <div class="result-item">📍 <b>ระยะทางวิ่ง(ขี่ทั่วไป60Wh/km):</b> <span id="resRealRange" style="color: red; font-weight: bold;">0</span> km</div>
+    </div>
+
+
+
+
+<script>
+function calculateRealEV() {
+    const V = parseFloat(document.getElementById('Voltage').value) || 0;
+    const Ah = parseFloat(document.getElementById('DCAmp').value) || 0;
+    const Inch = parseFloat(document.getElementById('HubMotor').value) || 0;
+    const KV = parseFloat(document.getElementById('MotorKV').value) || 14;
+
+    // 1. คำนวณพลังงาน
+    const energyWh = (V * Ah)/1000;
+
+    // 2. คำนวณ RPM 
+    const noLoadRPM = V * KV; 
+    const effLoss = 0.85;     // ประสิทธิภาพระบบไฟฟ้า
+    const loadLoss = 0.80;    // โหลดน้ำหนักและลม
+    
+    const realRPM = noLoadRPM * effLoss * loadLoss; 
+
+    // 3. คำนวณความเร็วจากล้อจริง (รวมแก้มยางหนาขยายขึ้น 20%)
+    const totalWheelDiameterInches = Inch * 1.20; 
+    const wheelDiameterMeters = totalWheelDiameterInches * 0.0254; 
+    const realSpeedKmh = (realRPM * (Math.PI * wheelDiameterMeters) * 155) / 1000;
+
+    // 4. ระยะทางวิ่ง
+    const realRangeKm = energyWh / 0.060;
+
+    // แสดงผลออกทางหน้าจอ
+    document.getElementById('resEnergy').innerText = energyWh.toFixed(2);
+    document.getElementById('resNoLoadRPM').innerText = noLoadRPM.toFixed(0);
+    document.getElementById('resRealRPM').innerText = realRPM.toFixed(0);
+    document.getElementById('resRealSpeed').innerText = realSpeedKmh.toFixed(2);
+    document.getElementById('resRealRange').innerText = realRangeKm.toFixed(2);
+}
+</script>
+<div style="margin-top: 25px; display: flex; justify-content: center; width: 100%;">
+    <a href="gp_dgf_01.html" style="text-decoration: none; width: 100%; max-width: 450px;">
+        <button style="
+            width: 35%;
+            padding: 14px 0; 
+            background-color: transparent; 
+            color: #00bcd4; 
+            border: 2px solid #00bcd4; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: bold;
+            box-sizing: border-box;
+            box-shadow: 0 0 10px rgba(0, 188, 212, 0.2);
+            transition: all 0.2s ease;
+        ">
+            ⬅️ ย้อนกลับหน้าแรก
+        </button>
+    </a>
+</div>
+</body>
+</html>
