@@ -255,7 +255,7 @@ GPS READY...
 </div>
 
 <label id="fluxLabel">Flux Weakening</label>
-<input type="number" id="fluxAmp" value="30">
+<input type="number" id="fluxAmp" value="28">
 
 <div class="flex-inputs">
 
@@ -328,9 +328,9 @@ const brandConfigs = {
 };
 
 const defaultProfiles = {
-    Race:{phase:300,battery:118,flux:30,low:30,high:96},
-    Street:{phase:270,battery:110,flux:28,low:25,high:94},
-    Cool:{phase:200,battery:85,flux:28,low:20,high:87}
+    Race:{phase:300,battery:118,flux:29,low:30,high:96},
+    Street:{phase:270,battery:110,flux:26,low:25,high:94},
+    Cool:{phase:250,battery:90,flux:23,low:20,high:90}
 };
 
 function switchBrandSettings() {
@@ -541,7 +541,13 @@ function shareToLine(){
 `⚡ EV TUNER PROFILE ⚡
 PHASE: ${document.getElementById('phaseAmp').value}A
 BATTERY: ${document.getElementById('batteryAmp').value}A
-FLUX: ${document.getElementById('fluxAmp').value}A`;
+FLUX: ${document.getElementById('fluxAmp').value}A
+📍LAT: ${document.getElementById('gps-display').value}A
+📍 LNG: ${document.getElementById('gps-display').value}A
+🚀 SPEED: ${document.getElementById.value}A`;    
+//📍LAT: ${lat.toFixed(6)}<br>
+//📍 LNG: ${lng.toFixed(6)}<br>
+//🚀 SPEED: ${speed} km/h    
 
     let lineUrl =
 `https://line.me/R/msg/text/?${encodeURIComponent(textMessage)}`;
@@ -558,7 +564,7 @@ let marker;
 let routeLine;
 let gpsInitialized = false;
 
-function initMap(lat = 7.8804, lng = 98.3923){
+function initMap(lat = 7.8804521, lng = 98.3923468){
 
     map = L.map('map').setView([lat, lng], 17);
 
