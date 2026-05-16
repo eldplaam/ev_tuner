@@ -625,7 +625,7 @@ function startRealGPS(){
     navigator.geolocation.watchPosition(
 
         (position)=>{
-
+            console.log('GPS UPDATE', position);
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
 
@@ -634,6 +634,10 @@ function startRealGPS(){
             ? (position.coords.speed * 3.6).toFixed(1)
             : 0;
 
+			currentLat = position.coords.latitude;
+            currentLng = position.coords.longitude;
+            currentSpeed = position.coords.speed;
+			
             if(!gpsInitialized){
 
                 initMap(lat, lng);
