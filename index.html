@@ -288,6 +288,11 @@ GPS READY...
 
 let writeChar = null;
 let activeDevice = null;
+let map;
+let marker;
+let routeLine;
+let gpsInitialized = false;
+//* GLOBAL GPS DATA *//
 let currentLat = 0;
 let currentLng = 0;
 let currentSpeed = 0;
@@ -539,7 +544,12 @@ function exportProfiles(){
 ====================================== */
 
 function shareToLine(){
+ if(!currentLat || !currentLng){
 
+        alert('GPS NOT READY');
+
+        return;
+    }
     let textMessage =
 `🌐 EV TUNER PROFILE ⚡
 🏎️🪫PHASE: ${document.getElementById('phaseAmp').value}A
@@ -569,10 +579,10 @@ https://maps.google.com/?q=${currentLat},${currentLng}`;
    REAL GPS MAP SYSTEM
 ====================================== */
 
-let map;
-let marker;
-let routeLine;
-let gpsInitialized = false;
+//let map;
+//let marker;
+//let routeLine;
+//let gpsInitialized = false;
 
 function initMap(lat = 7.8804521, lng = 98.3923468){
 
