@@ -285,6 +285,12 @@ GPS READY...
 </div>
 
 <script>
+const batteryAmp = document.getElementById('batteryAmp');
+const phaseAmp = document.getElementById('phaseAmp');
+
+batteryAmp.addEventListener('input', () => {
+    phaseAmp.value = Number(batteryAmp.value) * 3;
+});	
 
 let writeChar = null;
 let activeDevice = null;
