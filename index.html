@@ -287,10 +287,31 @@ GPS READY...
 <script>
 const batteryAmp = document.getElementById('batteryAmp');
 const phaseAmp = document.getElementById('phaseAmp');
+const fluxAmp = document.getElementById('fluxAmp');
+const tLow = document.getElementById('tLow');
+const tHigh = document.getElementById('tHigh');
 
-batteryAmp.addEventListener('input', () => {
-    phaseAmp.value = Number(batteryAmp.value) * 3;
-});	
+function updateValues() {
+
+    const battery = Number(batteryAmp.value) || 0;
+
+    // 1. Phase Current = Battery × 3
+    phaseAmp.value = (battery * 3).toFixed(0);
+
+    // 2. Pole Pairs = Battery ÷ 4.23
+    fluxAmp.value = (battery / 4.23).toFixed(0);
+
+    // 3. Throttle Low = Battery ÷ 3.05
+    tLow.value = (battery / 3.05).toFixed(0);
+
+    // 4. Throttle High = Battery × 1.1
+    tHigh.value = (battery * 1.1).toFixed(0);
+}
+
+batteryAmp.addEventListener('input', updateValues);
+
+// คำนวณตอนเปิดหน้าเว็บ
+updateValues();
 
 let writeChar = null;
 let activeDevice = null;
