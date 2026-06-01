@@ -244,29 +244,29 @@ GPS READY...
 
 <div>
 <label>Phase Current</label>
-<input type="number" id="phaseAmp" value="300">
+<input type="number" id="phaseAmp" value="330">
 </div>
 
 <div>
 <label>Battery Current</label>
-<input type="number" id="batteryAmp" value="118">
+<input type="number" id="batteryAmp" value="110">
 </div>
 
 </div>
 
 <label id="fluxLabel">Pole Pairs:(คู่ขั้วแม่เหล็ก)</label>
-<input type="number" id="fluxAmp" value="24">
+<input type="number" id="fluxAmp" value="26">
 
 <div class="flex-inputs">
 
 <div>
 <label>Throttle Low</label>
-<input type="number" id="tLow" value="30">
+<input type="number" id="tLow" value="35">
 </div>
 
 <div>
 <label>Throttle High</label>
-<input type="number" id="tHigh" value="96">
+<input type="number" id="tHigh" value="120">
 </div>
 
 </div>
@@ -336,9 +336,9 @@ const brandConfigs = {
 };
 
 const defaultProfiles = {
-    Race:{phase:300,battery:118,flux:24,low:30,high:96},
-    Street:{phase:280,battery:110,flux:23,low:25,high:94},
-    Cool:{phase:250,battery:90,flux:22,low:20,high:90}
+    Race:{phase:330,battery:110,flux:26,low:35,high:120},
+    Street:{phase:300,battery:100,flux:25,low:30,high:110},
+    Cool:{phase:270,battery:90,flux:24,low:25,high:100}
 };
 
 function switchBrandSettings() {
